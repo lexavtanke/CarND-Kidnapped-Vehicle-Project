@@ -36,9 +36,9 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
 
   // normal distribution for x,y,theta
 
-  std::normal_distribution dist_x(x, std[0]);
-  std::normal_distribution dist_y(y, std[1]);
-  std::normal_distribution dist_theta(theta, std[2]);
+  std::normal_distribution<double> dist_x(x, std[0]);
+  std::normal_distribution<double> dist_y(y, std[1]);
+  std::normal_distribution<double> dist_theta(theta, std[2]);
   
   for (int i = 0; i < num_particles; ++i)
   {
@@ -47,11 +47,13 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
     sample.x = dist_x(gen);
     sample.y = dist_y(gen);
     sample.theta = dist_theta(gen);
-    sample.weight = 1;
+    sample.weight = 1.0;
     particles.push_back(sample);
-
+    weights.push_back(sample.weight);
+  
   }
   is_initialized = true;
+  std::cout << std::endl << "num of particles is " << particles.size() << std::endl;
 
 }
 
