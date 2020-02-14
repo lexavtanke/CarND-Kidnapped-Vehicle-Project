@@ -30,6 +30,8 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
    * NOTE: Consult particle_filter.h for more information about this method 
    *   (and others in this file).
    */
+  // try to use as min number of particle as can 
+  // but with 100 particles precision is 2 times better
   num_particles = 10;  // TODO: Set the number of particles
   
   std::default_random_engine gen;
@@ -53,7 +55,7 @@ void ParticleFilter::init(double x, double y, double theta, double std[]) {
   
   }
   is_initialized = true;
-  std::cout << std::endl << "num of particles is " << particles.size() << std::endl;
+  // std::cout << std::endl << "num of particles is " << particles.size() << std::endl;
 
 }
 
@@ -71,11 +73,12 @@ void ParticleFilter::prediction(double delta_t, double std_pos[],
   for (int i = 0; i < particles.size(); ++i)
   {
       // define normal distributions for sensor noise
-  std::normal_distribution<double> N_x(0, std_pos[0]);
-  std::normal_distribution<double> N_y(0, std_pos[1]);
-  std::normal_distribution<double> N_theta(0, std_pos[2]);
+    std::normal_distribution<double> N_theta(0, std_pos[2]);
+    std::normal_distribution<double> N_y(0, std_pos[1]);
+    std::normal_distribution<double> N_x(0, std_pos[0]);
 
-        // calculate new state
+    // calculate new state
+    // for working after the first circle
     if (fabs(yaw_rate) < 0.00001) {  
       particles[i].x += velocity * delta_t * cos(particles[i].theta);
       particles[i].y += velocity * delta_t * sin(particles[i].theta);
@@ -86,24 +89,10 @@ void ParticleFilter::prediction(double delta_t, double std_pos[],
       particles[i].theta += yaw_rate * delta_t;
     }
 
-        // add noise
+    // add noise
     particles[i].x += N_x(gen);
     particles[i].y += N_y(gen);
     particles[i].theta += N_theta(gen);
-
-    // // calculate mean for x, y and theta
-    // double x_mean = particles[i].x + velocity / yaw_rate * (sin(particles[i].theta + yaw_rate * delta_t) - sin(particles[i].theta));
-    // double y_mean = particles[i].y + velocity / yaw_rate * (cos(particles[i].theta) - cos(particles[i].theta + yaw_rate * delta_t));
-    // double theta_mean = particles[i].theta + yaw_rate * delta_t;
-    // // default normal distribution for x,y and theta
-    // std::normal_distribution<double> dist_x(x_mean, std_pos[0]);
-    // std::normal_distribution<double> dist_y(y_mean, std_pos[1]);
-    // std::normal_distribution<double> dist_theta(theta_mean, std_pos[2]);
-    // // update x, y and theta 
-    // particles[i].x = dist_x(gen);
-    // particles[i].y = dist_y(gen);
-    // particles[i].theta = dist_theta(gen);
-
   }
 
 }
@@ -197,7 +186,7 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
     // double new_weight = 1.0;
     particles[i].weight = 1.0;
 
-    std::cout << std::endl << "particle "<< i << std::endl;
+    // std::cout << std::endl << "particle "<< i << std::endl;
 
     for (int j = 0; j < trans_observ.size(); ++j)
     {
@@ -219,14 +208,13 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
       double std_x = std_landmark[0];
       double std_y = std_landmark[1];
       double exponent = exp( -( pow(pred_x-obs_x,2)/(2*pow(std_x, 2)) + (pow(pred_y-obs_y,2)/(2*pow(std_y, 2))) ) );
-      std::cout << "exponent is " << exponent << std::endl;
+      // std::cout << "exponent is " << exponent << std::endl;
       double normalizer = 2 * M_PI * std_x * std_y;
-      std::cout << "normalizer is " << normalizer << std::endl;
+      // std::cout << "normalizer is " << normalizer << std::endl;
       double new_weight =  (1 / normalizer) * exponent;
       
-      std::cout << "current weight is " << particles[i].weight << " while new " << new_weight << std::endl;
+      // std::cout << "current weight is " << particles[i].weight << " while new " << new_weight << std::endl;
       particles[i].weight *= new_weight;
-      // weights[i] = new_weight;
     }
 
 
